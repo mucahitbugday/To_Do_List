@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/data/todo_service.dart';
+import 'package:todo_app/pages/todo_page.dart';
 
 import '../models/todo.dart';
 
@@ -11,6 +13,14 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   List<Todo> todos = [];
+  List<Todo> doneTodos = [];
+
+  @override
+  void initState() {
+    loadData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +41,18 @@ class _TodoListPageState extends State<TodoListPage> {
       body: TabBarView(
         children: [
           getTodoList(todos),
-          getTodoList(todos),
+          getTodoList(doneTodos),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TodoPage(),
+              ));
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -41,10 +61,28 @@ class _TodoListPageState extends State<TodoListPage> {
     return ListView.builder(
       itemCount: todos.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          title: Text((todos[index].title).toString()),
+        return Card(
+          child: ListTile(
+            title: Text((todos[index].title).toString()),
+            subtitle: Text((todos[index].description).toString()),
+            trailing: Checkbox(
+              onChanged: (value) {
+                setState(() {
+                  todos[index].isDone = value;
+                });
+              },
+              value: todos[index].isDone,
+            ),
+          ),
         );
       },
     );
+  }
+
+  loadData() {
+    setState(() {
+      todos = TodoService.getTodos();
+      doneTodos = TodoService.getDoneTodos();
+    });
   }
 }
