@@ -64,7 +64,7 @@ class _TodoListPageState extends State<TodoListPage> {
         return Card(
           child: ListTile(
             title: Text((todos[index].title).toString()),
-            subtitle: Text((todos[index].description).toString()),
+            subtitle: Text((todos[index].description.su).toString()),
             trailing: Checkbox(
               onChanged: (value) {
                 setState(() {

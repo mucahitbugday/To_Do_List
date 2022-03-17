@@ -1,5 +1,6 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
 import '../models/todo.dart';
 
 class TodoService {
@@ -43,5 +44,26 @@ class TodoService {
 
   static List<Todo> getDoneTodos() {
     return todos.where((element) => element.isDone!).toList();
+  }
+
+  late Database _db;
+
+  Future<Database> _initDb() async {
+    Directory dir = await getApplicationDocumentsDirectory();
+    String path = dir.path + 'todo.db';
+    final tododb = await openDatabase(path, version: 1, onCreate: _createDb);
+    return tododb;
+  }
+
+  void _createDb(Database db, int version) async {
+    await db.execute('CREATE TABLE todos(' +
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        'title TEXT,' +
+        'description TEXT,' +
+        'isDone INT)');
+  }
+
+  Future<int> addTodo(Todo todo) async {
+    return 0;
   }
 }
