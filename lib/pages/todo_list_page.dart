@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/data/todo_service.dart';
+import 'package:todo_app/models/todo.dart';
 import 'package:todo_app/pages/todo_page.dart';
-
-import '../models/todo.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
 
   @override
-  State<TodoListPage> createState() => _TodoListPageState();
+  _TodoListPageState createState() => _TodoListPageState();
 }
 
 class _TodoListPageState extends State<TodoListPage> {
+  TodoService service = TodoService.instance;
   List<Todo> todos = [];
   List<Todo> doneTodos = [];
 
@@ -25,9 +25,9 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("To Do"),
         centerTitle: true,
-        title: const Text("To Do"),
-        bottom: const TabBar(
+        bottom: TabBar(
           tabs: [
             Tab(
               icon: Icon(Icons.check_box_outline_blank),
@@ -46,43 +46,49 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => TodoPage(),
-              ));
+          Navigator.push(context, MaterialPageRoute(builder: (_) => TodoPage()))
+              .then((value) => loadData());
         },
-        child: const Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
     );
   }
 
   Widget getTodoList(List<Todo> todos) {
-    return ListView.builder(
-      itemCount: todos.length,
-      itemBuilder: (context, index) {
-        return Card(
-          child: ListTile(
-            title: Text((todos[index].title).toString()),
-            subtitle: Text((todos[index].description.su).toString()),
-            trailing: Checkbox(
-              onChanged: (value) {
-                setState(() {
-                  todos[index].isDone = value;
-                });
-              },
-              value: todos[index].isDone,
-            ),
-          ),
-        );
-      },
-    );
+    return todos.length == 0
+        ? Center(child: Text('Henüz bir şey yok'))
+        : ListView.builder(
+            itemCount: todos.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  title: Text(todos[index].title),
+                  subtitle: Text(todos[index].description),
+                  trailing: Checkbox(
+                    onChanged: (value) {
+                      todos[index].isDone = value!;
+                      service
+                          .updateIsDone(todos[index])
+                          .then((value) => loadData());
+                    },
+                    value: todos[index].isDone,
+                  ),
+                ),
+              );
+            },
+          );
   }
 
   loadData() {
-    setState(() {
-      todos = TodoService.getTodos();
-      doneTodos = TodoService.getDoneTodos();
+    service.getTodos(true).then((value) {
+      setState(() {
+        todos = value;
+      });
+    });
+    service.getTodos(false).then((value) {
+      setState(() {
+        doneTodos = value;
+      });
     });
   }
 }

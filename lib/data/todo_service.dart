@@ -1,69 +1,68 @@
 import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import "package:todo_app/models/todo.dart";
+
 import '../models/todo.dart';
 
 class TodoService {
-  static List<Todo> todos = [];
+  static TodoService instance = TodoService._internal();
 
-  static List<Todo> getTodos() {
-    if (todos.isEmpty) {
-      todos.add(
-        Todo(
-            id: 1,
-            title: "Kitap Oku",
-            description: "En az 50 sayfa",
-            isDone: false),
-      );
+  TodoService._internal();
 
-      todos.add(
-        Todo(
-            id: 2,
-            title: "Spor Yap",
-            description: "En az 2 saat",
-            isDone: false),
-      );
-      todos.add(
-        Todo(
-            id: 3,
-            title: "Yüzme kursu",
-            description: "Saat 2 de",
-            isDone: true),
-      );
-      todos.add(
-        Todo(
-          id: 3,
-          title: "Koş",
-          description: "2 Saat",
-          isDone: true,
-        ),
-      );
+  factory TodoService() {
+    return instance;
+  }
+
+  Future<List<Todo>> getTodos(bool isDone) async {
+    final mapList = await getTodoMaps();
+    List<Todo> todoList = [];
+
+    mapList?.forEach((element) {
+      todoList.add(Todo.fromMap(element));
+    });
+
+    if (isDone) {
+      return todoList.where((element) => !element.isDone).toList();
     }
-    return todos.where((element) => !element.isDone!).toList();
+    return todoList.where((element) => element.isDone).toList();
   }
 
-  static List<Todo> getDoneTodos() {
-    return todos.where((element) => element.isDone!).toList();
+  Future<List<Map<String, dynamic>>?> getTodoMaps() async {
+    return await _db?.query('todos');
   }
 
-  late Database _db;
+  static Database? _db;
+
+  Future<Database?> get db async {
+    _db ??= await _initDb();
+    return _db;
+  }
 
   Future<Database> _initDb() async {
     Directory dir = await getApplicationDocumentsDirectory();
     String path = dir.path + 'todo.db';
-    final tododb = await openDatabase(path, version: 1, onCreate: _createDb);
-    return tododb;
+    final todoDb = await openDatabase(path, version: 1, onCreate: _createDb);
+    return todoDb;
   }
 
   void _createDb(Database db, int version) async {
-    await db.execute('CREATE TABLE todos(' +
-        'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-        'title TEXT,' +
-        'description TEXT,' +
-        'isDone INT)');
+    await db.execute(
+        'CREATE TABLE todos(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT,description TEXT,isDone INT)');
   }
 
-  Future<int> addTodo(Todo todo) async {
-    return 0;
+  Future<int?> addTodo(Todo todo) async {
+    Database? db = await this.db;
+    int? res = await db?.insert('todos', todo.toMap());
+    // ignore: avoid_print
+    print(res.toString());
+    return res;
+  }
+
+  Future<int> updateIsDone(Todo todo) async {
+    Database? db = await this.db;
+    return await db!
+        .update('todos', todo.toMap(), where: 'id=?', whereArgs: [todo.id]);
   }
 }
