@@ -35,7 +35,7 @@ class TodoPage extends StatelessWidget {
                 isDone: false))
             .then((value) => Navigator.pop(context));
       },
-      child: Text(
+      child: const Text(
         "Save",
         style: TextStyle(color: Colors.white),
       ),
@@ -43,7 +43,7 @@ class TodoPage extends StatelessWidget {
     );
     return Scaffold(
       appBar: AppBar(
-        title: Text("New To do"),
+        title: const Text("New To do"),
       ),
       body: Column(
         children: [
@@ -51,7 +51,7 @@ class TodoPage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: titleField,
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Padding(

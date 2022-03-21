@@ -25,9 +25,9 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("To Do"),
+        title: const Text("To Do"),
         centerTitle: true,
-        bottom: TabBar(
+        bottom: const TabBar(
           tabs: [
             Tab(
               icon: Icon(Icons.check_box_outline_blank),
@@ -49,14 +49,14 @@ class _TodoListPageState extends State<TodoListPage> {
           Navigator.push(context, MaterialPageRoute(builder: (_) => TodoPage()))
               .then((value) => loadData());
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   Widget getTodoList(List<Todo> todos) {
-    return todos.length == 0
-        ? Center(child: Text('Henüz bir şey yok'))
+    return todos.isEmpty
+        ? const Center(child: Text('Henüz bir şey yok'))
         : ListView.builder(
             itemCount: todos.length,
             itemBuilder: (context, index) {
